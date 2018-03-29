@@ -1,0 +1,19 @@
+namespace assetsToken
+
+//TOKEN 余额变化原因
+enum BalanceChangeReason {
+  o RECHARGE //充值
+  o WITHDRAW //提现
+  o CONTRIBUTION_INCOME //贡献收入
+  o STORAGE_PAY //收纳支出
+}
+
+abstract asset TokenFlowSuper identified by tokenFlowID{
+  o String partyID //机构号
+  o String tokenFlowID //Token流水ID
+  o Double amount //变化数量
+  o Boolean isAdd //是否增加余额
+  o BalanceChangeReason balanceChangeReason //流水产生原因
+  o DateTime time //流水产生事件
+  o Double balance //当时余额
+}

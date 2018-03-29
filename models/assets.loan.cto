@@ -1,0 +1,168 @@
+namespace assetsLoan
+
+import sharedAssets.InvolvedCreditorOrg
+import sharedAssets.LoanSharedPlan
+
+// 资产类型
+enum AssetType {
+  o CREDIT // 信用贷款
+  o MORTGAGE // 抵押贷款
+  o PLEDGE // 质押贷款
+  o VOUCHER // 票据贷款
+}
+
+// 借款当事人类型
+enum LoanPartyKindType {
+  o PERSON // 个人
+  o ORGANIZE // 机构
+}
+
+// 借贷类型
+enum LoanType {
+  o CASH // 信用贷
+  o CASH_CONSUMPTION // 消费贷1
+  o CONSUMPTION // 消费贷
+  o PROVIDENT_FUND // 公积金贷
+  o ENTERPRISE // 企业贷
+  o CAR_MORTGAGE // 车辆抵押贷款
+  o POLICY // 保单贷
+  o CAR_PLEDGE // 车辆质押借款
+  o BILL // 票据
+}
+
+// 期限单位
+enum RepayTimeType {
+  o NATURAL_MONTH // 自然月
+  o DAY // 天
+}
+
+// 还款利率单位
+enum RepayRateType {
+  o DAY_RATES // 日利率
+  o MONTH_RATES // 月利率
+  o YEAR_RATES // 年利率
+}
+
+// 还款方式
+enum RepayWayType {
+  o ACAI // 等本等息
+  o ACPI // 等额本息
+  o AC // 等额本金
+  o IPMLC // 每月还息、到期还本
+  o IOLC // 先息后本
+  o IPTCPS // 按期付息、按季还本
+  o IPDCAT // 按日计息、随借随还
+}
+
+// 还款来源
+enum PaymentType {
+  o WAGES_AND_SALARIES // 工资薪金
+  o RENTAL_INCOME // 租金收益
+  o BUSINESS_INCOME // 企业营业收入
+  o STORE_SALES_REVENUE // 店铺销售收入
+}
+
+// 借款用途
+enum UsageLoanType {
+  o DAILY_CONSUMPTION // 日常消费
+  o PURCHASE_RV // 购置房车
+  o HOUSING_DECORATION // 住房装修
+  o INDIVIDUAL_TOURISM // 个人旅游
+  o STUDY // 求学
+  o SEE_THE_DOCTOR // 看病
+  o ENTERPRISE_OPERATION // 企业经营
+  o CAPITAL_TURNOVER // 企业资金周转
+  o PURCHASING_GOODS // 采购商品
+}
+
+// 资产当前状态
+enum LoanAssetStatusType {
+  o CLAIMABLE //可认领
+  o PROCESSING //执行中
+  o FINISHED //已完成
+  o REVOKED //已撤回
+}
+
+//借贷当事人信息
+abstract concept PartyPerson {
+    o String partyName // 借款当事人(同态加密)
+    o String loanIdent // 证件信息（身份证、统一信用码等(同态加密)
+    o String loanMobile  // 银行预留手机号(同态加密)
+}
+
+//借款人贷款申请
+concept BorrowerPerson extends PartyPerson {
+    o LoanType loanKind // 借贷类型，例：车抵贷
+    o AssetType assetType // 资产类型
+    o Integer borrower  // 借款额 
+    o Integer repayTerms // 还款期数
+    o Integer repayTime // 还款期限
+    o RepayTimeType repayTimeType // 期限单位
+    o Integer repayIntRate // 还款利率
+    o RepayRateType repayRateType // 还款利率单位
+    o RepayWayType repayWayType // 还款方式
+    o PaymentType paymentType // 还款来源
+    o UsageLoanType usageLoanType // 借款用途
+    o String loanPartyProvince // 借款人所在省
+    o String loanPartyCity // 借款人所在市
+    o LoanPartyKindType loanPartyKindType// 借款当事人类型
+    
+    o Boolean continuingLoan optional // 是否续贷
+    o Boolean compoundRate optional // 是否计算复利
+    o String loanCard optional // 放款银行卡
+    o String cardBank optional // 所属银行
+    o String openBank optional // 开户行
+}
+
+//资产数据
+concept DataSource{
+  o String kindCode //数据源类型
+  o String sourceUrl //数据源地址
+}
+
+//风控结果
+concept RiskControlResult {
+  o String score // 风控得分
+  o Integer loanLimit // 贷款额度
+  o Integer shareLimit // 风控参考分享额度 
+}
+
+//参与条件
+concept JoinLimit{
+  o Integer sharedUpLimit // 分享额度-上限
+  o Integer sharedLowerLimit optional// 分享额度-下限
+  o Integer sharedRateUpLimit // 分享利率 （单位：% )-上限
+  o Integer sharedRateLowerLimit // 分享利率 （单位：% )-下限
+  o Integer participantsUpLimit default=5 //参与机构数上限
+  o Integer participantsLowerLimit default=1 //参与机构数下限
+  o Integer tokenRate default=1// Token费率（单位：1 token/万元）
+  o DateTime startTime // 共享资产募集开始时间
+  o DateTime endTime // 共享资产结束时间
+}
+
+//资产参与机构的确认信息
+concept LoanShareConfirm {
+  --> InvolvedCreditorOrg confirmedOrg optional //确认收纳机构资源信息
+  o String partyID optional //共享资产参与机构ID
+  o String partyName optional //共享资产参与机构名称
+  o Integer confirmTakeInLimit //确认参与额度
+  o Integer confirmTakeInRate //确认参与利率 （单位：%）
+  o Double token optional //Token费用（单位：1 token）
+  o DateTime confirmTime optional //确认参与的时间
+  o Integer currentContributionValue optional //当前的贡献值
+}
+
+//风控结果
+concept RiskResult{
+    --> InvolvedCreditorOrg putOrg optional //上传风控结果的机构
+    o String partyID optional //机构ID
+    o String risk //风控结果
+}
+
+//资产共享完成的资产报告
+concept CompeletedLoanSharedPlanReport {
+  o String partyID //共享资产参与机构ID
+  o String partyName //共享资产参与机构名称
+  o Double limit //获得额度
+  o Double token //花费token数额
+}

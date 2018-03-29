@@ -1,0 +1,140 @@
+namespace sharedAssets
+
+//导入资产共享相关定义
+import assetsLoan.*
+import participantsLoan.*
+
+//导入平台管理员相关定义
+import assetsToken.*
+import participantManager.*
+
+//参与者类型1:平台中心管理员（token、贡献值）
+participant manager extends ManagerSuper {
+
+}
+
+//资产类型2:Token流水账务
+asset TokenFlow extends TokenFlowSuper{
+  --> InvolvedCreditorOrg involvedCreditorOrg //账务来源
+}
+
+//参与者类型2：借贷资产共享计划参与机构（可以贡献资产，也可以收纳资产）
+participant InvolvedCreditorOrg extends CreditorOrg{
+  o Double contributionValue default=100.0000 optional//机构贡献值
+  o Double balance default=100.0000 optional //Token余额
+  o Double frozenToken default=0.0000 optional//冻结余额
+}
+
+//资产类型2：链上资产模型
+asset LoanSharedPlan identified by assetID {
+  o String assetID //共享资产ID
+  o BorrowerPerson borrowerPerson //借款基本信息
+  o String assetBasicInfo optional //抵押资产信息（JSON string）
+  
+  o DataSource[] assetData //资产数据（数据源报告类型及地址）
+  o RiskControlResult riskControlResult //风控结果
+  o JoinLimit joinLimit //共享资产参与条件（分享额度/分享利率/通证费用）
+  --> InvolvedCreditorOrg contributeOrg //贡献机构
+  o LoanShareConfirm[] loanShareConfirms optional //共享资产收纳者确认信息数组
+  o RiskResult[] riskResults optional //风控结果
+  o LoanAssetStatusType status optional //资产状态
+  o CompeletedLoanSharedPlanReport[] report optional//已完成资产结果报告
+  o DateTime onTheChainTime optional //上链时间
+  o String other1 optional //预留字段
+}
+
+//*****发起交易：资产上链*****
+transaction putLoanSharedPlan {
+  o LoanSharedPlan loanSharedPlan //资产上链信息
+}
+
+//发布事件：资产上链
+event PutLoanSharedPlanEvent{
+  --> LoanSharedPlan loanSharedPlan //资产
+}
+
+//*****发起交易：撤回资产*****
+transaction revokedLoanAsset {
+  --> LoanSharedPlan loanSharedPlan //要撤回的资产
+}
+
+//发布事件：撤回资产
+event RevokedLoanAssetEvent{
+  --> LoanSharedPlan loanSharedPlan
+}
+
+//*****发起交易：确认资产（收纳动作）*****
+transaction orgConfirmAsset {
+  --> LoanSharedPlan  loanSharedPlan //被确认资产
+  --> InvolvedCreditorOrg involvedCreditorOrg optional//收纳机构(绑定card成功后将删除该字段)
+  o LoanShareConfirm loanShareConfirm //机构确认收纳信息
+}
+
+//发布事件：确认交易
+event OrgConfirmAssetEvent {
+  --> LoanSharedPlan  loanSharedPlan //被收纳资产
+  --> InvolvedCreditorOrg involvedCreditorOrg //收纳机构 
+}
+
+//检查交易状态
+transaction checkAssetsStatus {
+
+}
+
+//发布事件：检查交易状态结果
+event CheckAssetsStatusEvent{
+  --> LoanSharedPlan[] finishSharedAssets
+}
+
+//*****发起交易：Token充值*****
+transaction tokenRecharge {
+  --> InvolvedCreditorOrg involvedCreditorOrg //充值机构
+  o Integer amount //充值金额
+}
+
+//发布事件：TOkEN充值
+event TokenRechargeEvent{
+  --> InvolvedCreditorOrg involvedCreditorOrg //充值机构
+  o Integer amount //充值金额
+}
+
+//*****发起交易：Token提现 *****
+transaction tokenWithdraw{
+  --> InvolvedCreditorOrg involvedCreditorOrg //提现机构
+  o Integer amount //充值金额
+}
+
+//发布事件：Token提现
+event TokenWithdrawEvent{
+  --> InvolvedCreditorOrg involvedCreditorOrg //提现机构
+  o Integer amount //充值金额
+}
+
+//*****发起交易：更新公钥*****
+transaction updatePublicKey{
+  --> InvolvedCreditorOrg involvedCreditorOrg //需更改公钥的参与者
+  o String newPublicKey //更新的公钥
+}
+
+//发布事件：更新公钥
+event UpdatePublicKeyEvent{
+  --> InvolvedCreditorOrg involvedCreditorOrg //更改公钥的Participant
+}
+
+//*****发起交易：风控结果上链*****
+transaction putRiskResult{
+  --> LoanSharedPlan loanSharedPlan //风控资产
+  --> InvolvedCreditorOrg putOrg //上传风控结果的机构
+  o String risk //风控结果
+}
+
+
+//发布事件：风控结果上链
+event PutRiskResultEvent{
+  --> LoanSharedPlan loanSharedPlan //机构上传风控结果的资产
+}
+
+//发布事件：交易流水
+event TokenFlowEvent{
+  --> TokenFlow tokenFlow
+}

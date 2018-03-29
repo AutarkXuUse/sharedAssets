@@ -1,0 +1,5 @@
+namespace participantManager
+
+abstract participant ManagerSuper identified by managerID{
+  o String managerID //颁发机构ID
+}

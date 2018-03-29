@@ -1,0 +1,33 @@
+namespace participantsLoan
+
+//参与机构类型
+enum PartyOrgType {
+  o CREDITOR_ORG // 出借机构
+  o TOKEN_ISSUER // TOKEN分发/承兑机构
+  o DATASERVICEPROVIDER // 数据服务商
+}
+
+//出借机构类型
+enum CreditorOrgType {
+  o CREDITOR_CONTRIBUTOR // 借贷资产贡献机构
+  o CREDITOR_PARTICIPATOR // 借贷资产参与机构
+}
+
+//TOKEN流水状态
+enum TokenStatus{
+  o DEPOSIT //充值
+  o TRADE //交易
+  o WITHDRAW //体现
+}
+
+//机构基本信息
+abstract participant PartyOrg identified by partyID{
+    o String partyID //机构ID
+    o String partyName //机构名称
+    o PartyOrgType partyOrgType //机构类型（借贷、数据服务）
+    o String publicKey optional //机构公钥
+}
+
+abstract participant CreditorOrg extends PartyOrg {
+    o CreditorOrgType creditorOrgType //出借机构类型（借贷参与机构、借贷贡献机构）
+}
