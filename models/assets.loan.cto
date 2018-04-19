@@ -135,7 +135,6 @@ concept JoinLimit{
   o Integer sharedRateLowerLimit // 分享利率 （单位：% )-下限
   o Integer participantsUpLimit default=5 //参与机构数上限
   o Integer participantsLowerLimit default=1 //参与机构数下限
-  o Integer tokenRate default=1// Token费率（单位：1 token/万元）
   o DateTime startTime // 共享资产募集开始时间
   o DateTime endTime // 共享资产结束时间
 }
